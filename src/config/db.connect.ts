@@ -5,6 +5,6 @@ export async function connectDB(){
         await mongoose.connect(Bun.env.MONGO_URI!)
         console.log('mongodb connected !')
     } catch (error) {
-        throw Error('Mongo Connection Issue')
+        console.log(error)
     }
 }
