@@ -1,9 +1,10 @@
 import express from 'express'
-import { connectDB } from './config/db.connect'
 import authRoute from './routes/auth.route'
 import cors from 'cors'
+import { connectRedis } from './config/redis'
+import startServer from './config/startServer'
 
-const app = express()
+export const app = express()
 
 app.use(express.json())
 app.use(cors())
@@ -11,10 +12,10 @@ app.use(cors())
 
 app.use('/api/v1/auth',authRoute)
 
-const PORT = Bun.env.PORT
-
-connectDB();
-app.listen(PORT, () => {
-    console.log(`server runnin at port ${PORT}`)
+app.get('/redis', async (req,res) => {
+    await connectRedis()
+    res.json("redis working fine")
 })
 
+
+await startServer()

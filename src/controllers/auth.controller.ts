@@ -26,6 +26,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     res.cookie("Authorization", accessToken, { httpOnly: true });
 
+    console.log("I got here well")
     res.json({
       username: newUser.username,
       email: newUser.email,
