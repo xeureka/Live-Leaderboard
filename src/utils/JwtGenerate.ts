@@ -1,12 +1,10 @@
 import jwt from 'jsonwebtoken'
 
 // sign token
-
-export function signToken(email: string): string{
-    const token = jwt.sign({Email: email}, Bun.env.JWT_SECRET!)
+export function signToken(email: string,userId: string): string{
+    const token = jwt.sign({Email: email,UserId: userId}, Bun.env.JWT_SECRET!)
     return token
 }
-
 
 // verify token
 export function verifyToken(token: string): jwt.JwtPayload | string {

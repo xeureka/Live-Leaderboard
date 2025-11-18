@@ -28,7 +28,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     await newUser.save();
 
-    const accessToken = signToken(newUser.email); // assume string
+    const accessToken = signToken(newUser.email,newUser._id);
 
     res.cookie(COOKIE_NAME, accessToken, {
       httpOnly: true,
@@ -64,7 +64,7 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    const token = signToken(user.email);
+    const token = signToken(user.email,user._id);
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       // secure: process.env.NODE_ENV === "production",
