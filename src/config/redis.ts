@@ -16,4 +16,3 @@ export async function connectRedis(){
 }
 
 export default client;
-
