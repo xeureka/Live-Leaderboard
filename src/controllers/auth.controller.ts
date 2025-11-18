@@ -3,78 +3,87 @@ import { signToken, verifyToken } from "../utils/JwtGenerate";
 import { hashPassword, verifyPassword } from "../utils/hash";
 import Users from "../models/user.model";
 
+const COOKIE_NAME = "authorization";
+
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const user = await Users.findOne({ email: req.body.email });
+    const { email, username, password } = req.body;
 
-    if (user) {
-      res.json({ message: "User already exists !" }).status(401);
-      return;
+    if (!email || !password || !username) {
+      return res.status(400).json({ message: "username, email and password required" });
     }
 
-    const hashedPass = await hashPassword(req.body.password);
+    const existing = await Users.findOne({ email });
+    if (existing) {
+      return res.status(409).json({ message: "User already exists" });
+    }
 
-    let newUser = new Users({
-      username: req.body.username,
-      email: req.body.email,
+    const hashedPass = await hashPassword(password);
+
+    const newUser = new Users({
+      username,
+      email,
       password: hashedPass,
     });
 
     await newUser.save();
 
-    let accessToken = signToken(newUser.email);
+    const accessToken = signToken(newUser.email); // assume string
 
-    res.cookie("Authorization", accessToken, { httpOnly: true });
+    res.cookie(COOKIE_NAME, accessToken, {
+      httpOnly: true,
+      // secure: process.env.NODE_ENV === "production",
+      // sameSite: "lax"
+    });
 
-    console.log("I got here well")
-    res.json({
+    return res.status(201).json({
+      message: "User registered successfully",
       username: newUser.username,
       email: newUser.email,
     });
   } catch (error) {
-    res.json({ message: "Error Registering the user !", Error: error });
-    return;
+    console.error("Error in registerUser:", error);
+    return res.status(500).json({ message: "Error registering user", error: String(error) });
   }
 };
 
 export const loginUser = async (req: Request, res: Response) => {
   try {
-    const user = await Users.findOne({ email: req.body.email });
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: "email and password required" });
+    }
 
+    const user = await Users.findOne({ email });
     if (!user) {
-      res.json("User Don't Exist !").status(404);
-      return;
+      return res.status(404).json({ message: "User does not exist" });
     }
 
-    const givenPassword = req.body.password;
-
-    const passwordVerification = await verifyPassword(
-      givenPassword,
-      user.password
-    );
-
+    const passwordVerification = await verifyPassword(password, user.password);
     if (!passwordVerification) {
-      res.json({ message: "Invalid Username or Password !" }).status(400);
-      return;
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    let token = signToken(user.email);
-    res.header("authorization", token);
-    res.json({ message: "Login successful !" });
+    const token = signToken(user.email);
+    res.cookie(COOKIE_NAME, token, {
+      httpOnly: true,
+      // secure: process.env.NODE_ENV === "production",
+      // sameSite: "lax"
+    });
+
+    return res.status(200).json({ message: "Login successful" });
   } catch (error) {
-    res.json({ message: "Error Login the user !", Error: error });
-    return;
+    console.error("Error in loginUser:", error);
+    return res.status(500).json({ message: "Error logging in user", error: String(error) });
   }
 };
 
 export const logoutUser = async (req: Request, res: Response) => {
   try {
-    res
-      .clearCookie("Authorizatioin")
-      .json({ message: "Log out successful !! " })
-      .status(200);
+    res.clearCookie(COOKIE_NAME);
+    return res.status(200).json({ message: "Log out successful" });
   } catch (error) {
-    res.json(error);
-    return;
+    console.error("Error in logoutUser:", error);
+    return res.status(500).json({ message: "Error logging out", error: String(error) });
   }
 };
