@@ -1,9 +1,11 @@
 import type { Request, Response } from "express";
+import { Types } from 'mongoose'
 import { signToken, verifyToken } from "../utils/JwtGenerate";
 import { hashPassword, verifyPassword } from "../utils/hash";
 import Users from "../models/user.model";
+import { OperationCanceledException } from "typescript";
 
-const COOKIE_NAME = "authorization";
+export const COOKIE_NAME = "authorization";
 
 export const registerUser = async (req: Request, res: Response) => {
   try {
@@ -26,9 +28,18 @@ export const registerUser = async (req: Request, res: Response) => {
       password: hashedPass,
     });
 
-    await newUser.save();
+    const savedUser = await newUser.save();
+    let userId: string;
 
-    const accessToken = signToken(newUser.email,newUser._id);
+    if (typeof (savedUser as any).id === "string" && (savedUser as any).id) {
+      userId = (savedUser as any).id;
+    } else if (Types.ObjectId.isValid(savedUser._id as any)) {
+      userId = (savedUser._id as Types.ObjectId).toHexString();
+    } else {
+      userId = String(savedUser._id);
+    }
+
+    const accessToken = signToken(newUser.email,userId);
 
     res.cookie(COOKIE_NAME, accessToken, {
       httpOnly: true,
@@ -63,8 +74,18 @@ export const loginUser = async (req: Request, res: Response) => {
     if (!passwordVerification) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
+    let userId: string;
 
-    const token = signToken(user.email,user._id);
+    if (typeof (user as any).id === "string" && (user as any).id) {
+      userId = (user as any).id;
+    } else if (Types.ObjectId.isValid(user._id as any)) {
+      userId = (user._id as Types.ObjectId).toHexString();
+    } else {
+      userId = String(user._id);
+    }
+
+
+    const token = signToken(user.email,userId);
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       // secure: process.env.NODE_ENV === "production",
