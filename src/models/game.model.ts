@@ -6,10 +6,6 @@ export interface IGameScore extends Document{
     score: number;
     gameType: string;
     submittedAt: Date;
-    // metadata?:{
-    //     level: number,
-    //     timeStamp: Date;
-    // }
 }
 
 const gameScoreSchema: Schema<IGameScore> = new Schema({
@@ -27,7 +23,7 @@ const gameScoreSchema: Schema<IGameScore> = new Schema({
     gameType: {
         type: String,
         required: [true, "Game type is required"],
-        enum: ['classic','arcade','time-trial','survival'],
+        enum: ['codeforce','leetcode','atcoder','hackerank'],
         index: true
     },
     submittedAt: {

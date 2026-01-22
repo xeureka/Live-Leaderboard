@@ -39,7 +39,7 @@ export const registerUser = async (req: Request, res: Response) => {
       userId = String(savedUser._id);
     }
 
-    const accessToken = signToken(newUser.email,userId);
+    const accessToken = signToken(newUser.email,newUser.username,userId);
 
     res.cookie(COOKIE_NAME, accessToken, {
       httpOnly: true,
@@ -85,7 +85,7 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
 
-    const token = signToken(user.email,userId);
+    const token = signToken(user.email,user.username,userId);
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       // secure: process.env.NODE_ENV === "production",
