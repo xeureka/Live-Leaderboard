@@ -1,39 +1,42 @@
-import mongoose, {Document,Schema,model,Types} from 'mongoose'
+import mongoose, { Document, Schema, model, Types } from 'mongoose';
 
-export interface IGameScore extends Document{
-    _id: string;
-    userId: Types.ObjectId;
-    score: number;
-    gameType: string;
-    submittedAt: Date;
+export interface IGameScore extends Document {
+  _id: string;
+  userId: Types.ObjectId;
+  score: number;
+  gameType: string;
+  submittedAt: Date;
 }
 
-const gameScoreSchema: Schema<IGameScore> = new Schema({
+const gameScoreSchema: Schema<IGameScore> = new Schema(
+  {
     userId: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: [true, "user ID is required"],
-        index: true
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'user ID is required'],
+      index: true,
     },
     score: {
-        type: Number,
-        required: [true, "Score is required"],
-        min: [0, 'Score cannot be negative']
+      type: Number,
+      required: [true, 'Score is required'],
+      min: [0, 'Score cannot be negative'],
     },
     gameType: {
-        type: String,
-        required: [true, "Game type is required"],
-        enum: ['codeforce','leetcode','atcoder','hackerank'],
-        index: true
+      type: String,
+      required: [true, 'Game type is required'],
+      enum: ['codeforce', 'leetcode', 'atcoder', 'hackerank'],
+      index: true,
     },
     submittedAt: {
-        type: Date,
-        default: Date.now
-    }
-},{
+      type: Date,
+      default: Date.now,
+    },
+  },
+  {
     timestamps: true,
-})
+  },
+);
 
-const Games = model("Game",gameScoreSchema)
+const Games = model('Game', gameScoreSchema);
 
 export default Games;

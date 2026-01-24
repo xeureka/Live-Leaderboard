@@ -1,30 +1,32 @@
-import express from 'express'
-import authRoute from './routes/auth.route'
-import leaderboardRoute from "./routes/game.route"
-import cors from 'cors'
-import { connectRedis } from './config/redis'
-import startServer from './config/startServer'
-import { verifyToken } from './utils/JwtGenerate'
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
-export const app = express()
+import authRoute from './routes/auth.route';
+import leaderboardRoute from './routes/game.route';
+import startServer from './config/startServer';
+import { connectRedis } from './config/redis';
+import { verifyToken } from './utils/JwtGenerate';
 
-app.use(express.json())
-app.use(cors())
+export const app = express();
 
-app.use('/api/v1/auth',authRoute)
-app.use('/api/v1/leaderboard',leaderboardRoute)
+app.use(express.json());
+app.use(cors());
+app.use(cookieParser());
 
-app.get('/redis', async (req,res) => {
-    await connectRedis()
-    res.json("redis working fine")
-})
+app.use('/api/v1/auth', authRoute);
+app.use('/api/v1/leaderboard', leaderboardRoute);
 
-app.get('/verify',(req,res) => {
+app.get('/redis', async (req, res) => {
+  await connectRedis();
+  res.json('redis working fine');
+});
 
-    let token = ""
+app.get('/verify', (req, res) => {
+  let token = '';
 
-    console.log(verifyToken(token))
-    res.json(verifyToken(token))
-})
+  console.log(verifyToken(token));
+  res.json(verifyToken(token));
+});
 
-await startServer()
+await startServer();
